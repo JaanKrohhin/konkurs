@@ -1,7 +1,12 @@
 <?php
 require_once ('conf.php');
+session_start();
+if (!isset($_SESSION['tuvastamine'])){
+    header('Location:login.php');
+    exit();
+}
+
 global $connection;
-$answer=false;
 //null komment
 if (isset($_REQUEST['komment'])){
     $order=$connection->prepare("UPDATE konkurs set kommentaar=' ' where id=?");
@@ -13,12 +18,6 @@ if (isset($_REQUEST['komment'])){
 if (isset($_REQUEST['punkt'])){
     $order=$connection->prepare("UPDATE konkurs set punktid=0 where id=?");
     $order->bind_param("i",$_REQUEST['punkt']);
-    $order->execute();
-    header("Location: $_SERVER[PHP_SELF]");
-}
-if (!empty($_REQUEST['nimi'])){
-    $order=$connection->prepare("Insert into konkurs(nimi,pilt,lisamisaeg) values(?,?,Now())");
-    $order->bind_param("ss",$_REQUEST['nimi'],$_REQUEST['pilt']);
     $order->execute();
     header("Location: $_SERVER[PHP_SELF]");
 }
@@ -51,9 +50,22 @@ if(isset($_REQUEST ['kustuta'])) {
 </head>
 <body>
 <nav>
-    <a href="haldus.php">Admin Leht</a>
+    <?php
+    if ($_SESSION['onAdmin']==1){
+    echo '<a href="haldus.php">Admin Leht</a>
+    <a href="lisamine.php">Lisamis Leht</a>';
+    }
+    ?>
     <a href="konkurs.php">Kasutaja Leht</a>
+    <a href="https://github.com/JaanKrohhin/konkurs.git" target="_blank">Github</a>
 </nav>
+<div class="user">
+    <p><?=$_SESSION["kasutaja"]?> on sisse logitud</p>
+    <form action="logout.php" method="post">
+        <input type="submit" value="Logi välja" name="logout">
+    </form>
+</div>
+
 <h1>Fotokonkurss Haldusleht</h1>
 <?php
 //tabeli konkurss sisu näitamine
@@ -96,13 +108,7 @@ while($order->fetch()){
     echo "<a href='?komment=$id'>Kustuta komment</a></td>";
     echo "</tr>";
 }
-echo "</table>"
+echo "</table>";
 ?>
-<h2>Uue Pilti lisamine</h2>
-<form action="?">
-    </label><input type="text" name="nimi" placeholder="Uus nimi"><br>
-    <textarea name="pilt" cols="30" rows="10"></textarea><br>
-    <input type="submit" name="lisa">
-</form>
 </body>
 </html>

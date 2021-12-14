@@ -1,5 +1,11 @@
 <?php
 require_once ('conf.php');
+session_start();
+if (!isset($_SESSION['tuvastamine'])){
+    header('Location:login.php');
+    exit();
+}
+
 global $connection;
 //new comment
 if (isset($_REQUEST['uus_komment'])){
@@ -28,10 +34,23 @@ if (isset($_REQUEST['punkt'])){
     <title>Fotokonkurss</title>
 </head>
 <body>
-    <nav>
-        <a href="haldus.php">Admin Leht</a>
-        <a href="konkurs.php">Kasutaja Leht</a>
-    </nav>
+<nav>
+    <?php
+    if ($_SESSION['onAdmin']==1){
+        echo '<a href="haldus.php">Admin Leht</a>
+    <a href="lisamine.php">Lisamis Leht</a>';
+    }
+    ?>
+    <a href="konkurs.php">Kasutaja Leht</a>
+    <a href="https://github.com/JaanKrohhin/konkurs.git" target="_blank">Github</a>
+</nav>
+    <div class="user">
+        <p><?=$_SESSION["kasutaja"]?> on sisse logitud</p>
+        <form action="logout.php" method="post">
+            <input type="submit" value="Logi välja" name="logout">
+        </form>
+    </div>
+
     <h1>Fotokonkurss "Orav"</h1>
     <?php
     //tabeli konkurss sisu näitamine
@@ -39,7 +58,8 @@ if (isset($_REQUEST['punkt'])){
     $order->bind_result($id,$nimi,$pilt,$kom,$punktid, $avalik);
     $order->execute();
     echo "<table>";
-    echo "<tr>
+    if ($_SESSION["onAdmin"]==0){
+        echo "<tr>
         <th>ID</th>
         <th>Nimi</th>
         <th>Pilt</th>
@@ -48,21 +68,35 @@ if (isset($_REQUEST['punkt'])){
         <th>Punktikd</th>
         <th>Tegevused</th>
         </tr>";
+    }else{
+        echo "<tr>
+        <th>ID</th>
+        <th>Nimi</th>
+        <th>Pilt</th>
+        <th>Kommentaarid</th>
+        <th>Punktikd</th>
+        </tr>";
+    }
     while($order->fetch()){
         echo "<tr>";
         echo "<td>$id</td>";
         echo "<td>$nimi</td>";
         echo "<td><img src='$pilt' alt='pilt'></td>";
         echo "<td>".nl2br($kom)."</td>";
-        echo "<td>
+        if ($_SESSION["onAdmin"]==0){
+            echo "<td>
         <form action='?'>
             <input type='hidden' name='uus_komment' value='$id'>
             <input type='text' name='komment'>
             <input type='submit' value='OK'>
         </form>
         </td>";
+        }
+
         echo "<td>$punktid</td>";
-        echo "<td><a href='?punkt=$id'>Lisa punkt</a></td>";
+        if ($_SESSION["onAdmin"]==0){
+            echo "<td><a href='?punkt=$id'>Lisa punkt</a></td>";
+        }
         echo "</tr>";
     }
     echo "</table>"
