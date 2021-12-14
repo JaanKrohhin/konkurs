@@ -2,6 +2,13 @@
 require_once ('conf.php');
 global $connection;
 $answer=false;
+//null komment
+if (isset($_REQUEST['komment'])){
+    $order=$connection->prepare("UPDATE konkurs set kommentaar=' ' where id=?");
+    $order->bind_param("i",$_REQUEST['komment']);
+    $order->execute();
+    header("Location: $_SERVER[PHP_SELF]");
+}
 //null points
 if (isset($_REQUEST['punkt'])){
     $order=$connection->prepare("UPDATE konkurs set punktid=0 where id=?");
@@ -50,27 +57,22 @@ if(isset($_REQUEST ['kustuta'])) {
 <h1>Fotokonkurss Haldusleht</h1>
 <?php
 //tabeli konkurss sisu näitamine
-$order=$connection->prepare("SELECT id, nimi,pilt,lisamisaeg,punktid, avalik FROM konkurs");
-$order->bind_result($id,$nimi,$pilt,$aeg,$punktid, $avalik);
+$order=$connection->prepare("SELECT id, nimi, pilt, lisamisaeg, punktid,kommentaar, avalik FROM konkurs");
+$order->bind_result($id,$nimi,$pilt,$aeg,$punktid,$kom, $avalik);
 $order->execute();
 echo "<table>";
 echo "<tr>
+        <th>Status</th>
         <th>ID</th>
         <th>Nimi</th>
         <th>Lisamis Aeg</th>
         <th>Pilt</th>
+        <th>Kommenataar</th>
         <th>Punktikd</th>
-        <th>Status</th>
         <th>Tegevused</th>
         </tr>";
 
 while($order->fetch()){
-    echo "<tr>";
-    echo "<td>$id</td>";
-    echo "<td>$nimi</td>";
-    echo "<td>$aeg</td>";
-    echo "<td><img src='$pilt' alt='pilt'></td>";
-    echo "<td>$punktid</td>";
     $avatekst="Ava";
     $param="avamine";
     $seisund="Peidetud";
@@ -80,10 +82,18 @@ while($order->fetch()){
         $seisund="Avatud";
     }
     $txt='"Kas sa tahad kustutada seda fotod"';
-    echo "<td>$seisund</td>";
-    echo "<td><a href='?punkt=$id'>Nullita</a><br>";
+    echo "<tr>";
+    echo "<td>$seisund<br>";
     echo "<a href='?$param=$id'>$avatekst</a><br>";
     echo "<a href='?kustuta=$id' onclick='return confirm($txt)'>Kustuta</a></td>";
+    echo "<td>$id</td>";
+    echo "<td>$nimi</td>";
+    echo "<td>$aeg</td>";
+    echo "<td><img src='$pilt' alt='pilt'></td>";
+    echo "<td>$kom</td>";
+    echo "<td>$punktid</td>";
+    echo "<td><a href='?punkt=$id'>Nullita punktid</a><br>";
+    echo "<a href='?komment=$id'>Kustuta komment</a></td>";
     echo "</tr>";
 }
 echo "</table>"

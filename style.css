@@ -7,6 +7,7 @@ td{
 }
 table{
     text-align: center;
+    margin-left: 20px;
 }
 body{
     background-color: burlywood;
@@ -22,8 +23,12 @@ a:hover{
 nav{
     background-color: bisque;
     text-decoration: none;
+    padding: 10px;
 }
 nav a{
     font-weight: bold;
-
+    margin-left: 15px;
+}
+input[type=text]{
+    width: 100px;
 }
